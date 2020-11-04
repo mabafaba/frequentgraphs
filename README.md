@@ -15,6 +15,9 @@ devtools::install_github("mabafaba/frequentgraphs")
 Say we're interested in some custom scalar summary statistic of a graph - for example the mean closeness of largest connected component of the graph:
 
 ```
+library(igraph)
+library(frequentgraphs)
+
 mean_closeness<-function(g,...){
   giant_comp <- g_largest_component(g)
   mean(closeness(giant_comp,...))
