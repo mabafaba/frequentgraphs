@@ -1,0 +1,103 @@
+---
+title: "example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+```{r setup}
+library(igraph)
+library(frequentgraphs)
+library(magrittr)
+```
+
+
+# Example graphs
+
+```{r}
+# runif(1)
+set.seed(0.8662903)
+
+lattice <- make_lattice(dimvector = c(20,20))
+star <- make_star(n = 15)
+
+```
+
+## Example scalar graph statistic
+
+Say we're interested in the mean closeness of largest connected component of the graph:
+
+```{r}
+mean_closeness<-function(g,...){
+  giant_comp <- g_largest_component(g)
+  mean(closeness(giant_comp,...))
+  }
+```
+
+## Hypothesis test
+
+```{r,warning=FALSE}
+
+# lattice
+lattice_test <- g_test_scalar(g = lattice,
+                              simulation.n = 300,
+                              scalar.graph.statistic = mean_closeness)
+
+lattice_test$observed
+lattice_test$simulated.mean
+lattice_test$p.value
+lattice_test$normality.condition.met
+
+```
+
+The lattice has a much smaller mean closeness than the largest component of same size graphs with a uniformly random edge distribution on average.
+The probability that a uniform random distribution of edges produces an average degree centrality as high as the lattice is < `r ceiling(lattice_test$p.value*1000)/1000`.
+
+The test statistic is not normally distributed, so this result should not be taken too serious. 
+We should have a look at the distribution:
+
+```{r, fig.width=8,fig.height=6}
+g_test_scalar_plot(lattice_test)
+```
+
+
+In comparison, a Barabasi-Albert model graph:
+```{r}
+
+g <- igraph::ba.game(100,m = 3)
+plot(g)
+  g_test_scalar(g,
+                simulation.n = 100,
+                scalar.graph.statistic = mean_closeness,
+                na.rm = TRUE) %>% 
+  g_test_scalar_plot
+
+```
+
+In comparison, a  Geometric random graph:
+```{r}
+
+g <- igraph::grg.game(100,radius = 0.5)
+plot(g)
+  g_test_scalar(g,
+                simulation.n = 100,
+                scalar.graph.statistic = mean_closeness,
+                na.rm = TRUE) %>% 
+  g_test_scalar_plot
+
+
+```
+
+
+
